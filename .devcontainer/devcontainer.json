@@ -1,8 +1,8 @@
 {
-	"name": "bepro_iseebetter",
+	"name": "bepro_comisr",
 	"context": "..",
 	// "dockerFile": "../Dockerfile.remote.arm64",
-	"image": "iseebetter:latest",
+	"image": "comisr:latest",
 	"settings": {
 		"terminal.integrated.shell.linux": null
 	},
@@ -26,8 +26,8 @@
 		"--volume=/var/log:/var/log",
 		"--volume=/var/www/static:/var/www/static"
 	],
-	"workspaceFolder": "/iSeeBetter",
-	"workspaceMount": "source=/home/research/iSeeBetter,target=/iSeeBetter,type=bind,consistency=cached",
+	"workspaceFolder": "/vsr_comisr",
+	"workspaceMount": "source=/home/research/vsr_comisr,target=/vsr_comisr,type=bind,consistency=cached",
 	"remoteUser": "root"
 	// "remoteEnv": {
 	// 	"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
