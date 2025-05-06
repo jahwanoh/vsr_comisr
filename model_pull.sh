@@ -1,0 +1,1 @@
+gsutil cp -r gs://gresearch/comisr/model/ .
