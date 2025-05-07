@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-base-ubuntu20.04
+FROM nvidia/cuda:12.2.0-cudnn8-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,27 +18,28 @@ WORKDIR /app
 
 # Copy requirements
 COPY requirements.txt .
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Install specific versions of TensorFlow and TensorFlow Addons
-# RUN pip3 install tensorflow==2.10.0 tensorflow-addons==0.19.0
+RUN pip3 install tensorflow==2.15.0 tensorflow-addons==0.22.0
 
 # Copy application code
 COPY . .
 
 # Set up comisr module structure
-# RUN if [ -d "/app/lib" ] && [ ! -d "/app/comisr" ]; then \
-#     mkdir -p /app/comisr/lib && \
-#     cp /app/lib/*.py /app/comisr/lib/ && \
-#     echo "# COMISR package" > /app/comisr/__init__.py && \
-#     echo "# COMISR lib package" > /app/comisr/lib/__init__.py; \
-# fi
+RUN mkdir -p /app/comisr/lib && \
+    cp /app/lib/*.py /app/comisr/lib/ && \
+    echo "# COMISR package" > /app/comisr/__init__.py && \
+    echo "# COMISR lib package" > /app/comisr/lib/__init__.py
 
 # Make sure scripts are executable
 RUN chmod +x *.sh
 
 # Set up environment variables
 ENV PYTHONPATH=/app
+ENV TF_FORCE_GPU_ALLOW_GROWTH=true
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 
 # Set entrypoint
 ENTRYPOINT ["/bin/bash"] 

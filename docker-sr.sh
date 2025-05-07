@@ -32,11 +32,20 @@ if [ ! -f "/app/data/match_178203_half_res.mp4" ]; then
   exit 1
 fi
 
+# Check GPU availability
+echo "Checking GPU availability..."
+nvidia-smi
+
+# Set environment variables for GPU usage
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+export XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda
+
 # Set PYTHONPATH to include current directory
 export PYTHONPATH=/app:$PYTHONPATH
 
 # Run the super-resolution process
-python /app/video_inference.py \
+echo "Starting super-resolution with GPU acceleration..."
+python3 /app/video_inference.py \
   --input_video="/app/data/match_178203_half_res.mp4" \
   --output_video="/app/data/match_178203_super_res.mp4" \
   --checkpoint_path="/app/model/model.ckpt" \
