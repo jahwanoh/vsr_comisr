@@ -33,7 +33,14 @@ import cv2
 import numpy as np
 import tensorflow.compat.v1 as tf
 import tensorflow.compat.v1.io.gfile as gfile
-import tensorflow_addons as tfa
+
+# Handle tensorflow_addons compatibility issue
+try:
+    import tensorflow_addons as tfa
+    has_tfa = True
+except (ImportError, ModuleNotFoundError):
+    print("Warning: tensorflow_addons import failed. Using fallback implementations.")
+    has_tfa = False
 
 from comisr.lib.model import fnet
 from comisr.lib.model import generator_f
@@ -117,10 +124,77 @@ def _get_ema_vars():
     return list(set(ema_vars))
 
 
+def gaussian_filter2d(image, sigma=1.5):
+    """Fallback implementation of gaussian_filter2d if tensorflow_addons is not available."""
+    # Create 1D kernels
+    size = int(sigma * 4) * 2 + 1
+    channels = image.get_shape().as_list()[-1]
+    
+    x = tf.range(-size // 2 + 1, size // 2 + 1, dtype=tf.float32)
+    kernel_1d = tf.exp(-tf.pow(x, 2.0) / (2.0 * tf.pow(tf.cast(sigma, tf.float32), 2.0)))
+    kernel_1d = kernel_1d / tf.reduce_sum(kernel_1d)
+    
+    # Expand to 2D kernel
+    kernel_2d = tf.tensordot(kernel_1d, kernel_1d, axes=0)
+    kernel_2d = tf.expand_dims(tf.expand_dims(kernel_2d, -1), -1)
+    kernel_2d = tf.tile(kernel_2d, [1, 1, channels, 1])
+    
+    # Apply the filter
+    padded_image = tf.pad(image, [[0, 0], [size//2, size//2], [size//2, size//2], [0, 0]], 'REFLECT')
+    return tf.nn.depthwise_conv2d(padded_image, kernel_2d, strides=[1, 1, 1, 1], padding='VALID')
+
+
+def dense_image_warp(image, flow):
+    """Fallback implementation of dense_image_warp if tensorflow_addons is not available."""
+    batch_size, height, width, channels = tf.shape(image)[0], tf.shape(image)[1], tf.shape(image)[2], tf.shape(image)[3]
+    
+    # Create meshgrid
+    grid_x, grid_y = tf.meshgrid(tf.range(width), tf.range(height))
+    grid = tf.cast(tf.stack([grid_y, grid_x], axis=2), tf.float32)
+    grid = tf.expand_dims(grid, axis=0)
+    grid = tf.tile(grid, [batch_size, 1, 1, 1])
+    
+    # Add flow to grid
+    pos = grid + flow
+    
+    # Clip to valid range
+    pos = tf.clip_by_value(pos, 0, tf.cast([height-1, width-1], tf.float32))
+    
+    # Get integer and fractional parts of coordinates
+    pos_floor = tf.floor(pos)
+    pos_top_left = tf.cast(pos_floor, tf.int32)
+    pos_bottom_right = tf.minimum(pos_top_left + 1, [height-1, width-1])
+    pos_top_right = tf.stack([pos_top_left[..., 0], pos_bottom_right[..., 1]], axis=-1)
+    pos_bottom_left = tf.stack([pos_bottom_right[..., 0], pos_top_left[..., 1]], axis=-1)
+    
+    # Calculate interpolation weights
+    alpha = pos - pos_floor
+    alpha_other = 1 - alpha
+    
+    # Gather pixel values and apply weights
+    def gather_pixel(pos):
+        y, x = pos[..., 0], pos[..., 1]
+        indices = tf.stack([tf.range(batch_size, dtype=tf.int32)[:, None, None], y, x], axis=-1)
+        return tf.gather_nd(image, indices)
+    
+    top_left = gather_pixel(pos_top_left)
+    top_right = gather_pixel(pos_top_right)
+    bottom_left = gather_pixel(pos_bottom_left)
+    bottom_right = gather_pixel(pos_bottom_right)
+    
+    # Bilinear interpolation
+    interp_top = alpha[..., 1:2] * top_right + alpha_other[..., 1:2] * top_left
+    interp_bottom = alpha[..., 1:2] * bottom_right + alpha_other[..., 1:2] * bottom_left
+    return alpha[..., 0:1] * interp_bottom + alpha_other[..., 0:1] * interp_top
+
+
 def extract_detail_ops(image, sigma=1.5):
     """Extract details from the image tensors."""
     # input image is a 3D or 4D tensor with image range in [0, 1].
-    image_blur = tfa.image.gaussian_filter2d(image, sigma=sigma)
+    if has_tfa:
+        image_blur = tfa.image.gaussian_filter2d(image, sigma=sigma)
+    else:
+        image_blur = gaussian_filter2d(image, sigma=sigma)
     laplacian_image = (image - image_blur)
     return laplacian_image
 
@@ -191,7 +265,13 @@ def process_video(input_video, output_video, checkpoint_path, num_resblock,
         gen_flow = deconv_flow + gen_flow
 
         gen_flow.set_shape(output_shape[:-1] + [2])
-    pre_warp_hi = tfa.image.dense_image_warp(pre_gen, gen_flow)
+    
+    # Use tensorflow_addons if available, otherwise use our fallback implementation
+    if has_tfa:
+        pre_warp_hi = tfa.image.dense_image_warp(pre_gen, gen_flow)
+    else:
+        pre_warp_hi = dense_image_warp(pre_gen, gen_flow)
+    
     pre_warp_hi = pre_warp_hi + extract_detail_ops(pre_warp_hi)
     before_ops = tf.assign(pre_warp, pre_warp_hi)
 
