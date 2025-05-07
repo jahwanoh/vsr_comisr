@@ -1,10 +1,10 @@
 absl-py>=0.12.0
-numpy>=1.14.3
-scipy>=1.0.1
-pandas>=0.23.1
+numpy==1.21.1
+scipy==1.10.1
+pandas==2.0.3
 Keras==2.10.0
 opencv-python>=2.4.11
 tensorflow==2.10.0
-scikit-image>=0.18.0
+scikit-image>=0.21.0
 tensorflow-addons
 tf_slim
