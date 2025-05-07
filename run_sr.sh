@@ -20,10 +20,12 @@ if [ ! -d "comisr" ] && [ -d "lib" ]; then
 fi
 
 # Parameters
-INPUT_VIDEO="data/match_178203_half_res.mp4"
-OUTPUT_VIDEO="data/match_178203_super_res.mp4"
+# INPUT_VIDEO="data/match_178203_half_res.mp4"
+INPUT_VIDEO="data/match_178203.mp4"
+OUTPUT_VIDEO="data/match_178203_from_full_x2_sr_comisr.mp4"
 CHECKPOINT="model/model.ckpt"
-VSR_SCALE=4
+# VSR_SCALE=4
+VSR_SCALE=2
 NUM_RESBLOCK=10
 USE_EMA=true
 START_FRAME=0
