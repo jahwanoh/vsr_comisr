@@ -18,6 +18,24 @@ print_red() {
 # Create necessary directories
 mkdir -p data model
 
+# Fix module structure if needed
+if [ ! -d "comisr" ] && [ -d "lib" ]; then
+  print_yellow "Creating comisr module structure..."
+  mkdir -p comisr/lib
+  cp lib/*.py comisr/lib/
+  
+  # Create __init__.py files if they don't exist
+  if [ ! -f "comisr/__init__.py" ]; then
+    echo "# COMISR package" > comisr/__init__.py
+    print_green "Created comisr/__init__.py"
+  fi
+  
+  if [ ! -f "comisr/lib/__init__.py" ]; then
+    echo "# COMISR lib package" > comisr/lib/__init__.py
+    print_green "Created comisr/lib/__init__.py"
+  fi
+fi
+
 # Check if Docker is available
 if ! command -v docker &> /dev/null; then
   print_red "Docker is not installed. Please install Docker to continue."
@@ -76,6 +94,10 @@ fi
 
 # Try to run with the modified script first
 print_green "Attempting to run super-resolution using the modified script..."
+
+# Set PYTHONPATH to include current directory
+export PYTHONPATH=.:$PYTHONPATH
+
 if python video_inference.py \
      --input_video="data/match_178203_half_res.mp4" \
      --output_video="data/match_178203_super_res.mp4" \

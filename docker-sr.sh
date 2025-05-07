@@ -2,6 +2,22 @@
 
 # This script is meant to be run inside the Docker container
 
+# Fix module structure if needed
+if [ ! -d "/app/comisr" ] && [ -d "/app/lib" ]; then
+  echo "Creating comisr module structure..."
+  mkdir -p /app/comisr/lib
+  cp /app/lib/*.py /app/comisr/lib/
+  
+  # Create __init__.py files if they don't exist
+  if [ ! -f "/app/comisr/__init__.py" ]; then
+    echo "# COMISR package" > /app/comisr/__init__.py
+  fi
+  
+  if [ ! -f "/app/comisr/lib/__init__.py" ]; then
+    echo "# COMISR lib package" > /app/comisr/lib/__init__.py
+  fi
+fi
+
 # Check if the checkpoint files exist
 if [ ! -f "/app/model/model.ckpt.index" ]; then
   echo "Error: Checkpoint files not found in /app/model/"
@@ -15,6 +31,9 @@ if [ ! -f "/app/data/match_178203_half_res.mp4" ]; then
   echo "Please ensure you have mounted the data directory correctly"
   exit 1
 fi
+
+# Set PYTHONPATH to include current directory
+export PYTHONPATH=/app:$PYTHONPATH
 
 # Run the super-resolution process
 python /app/video_inference.py \

@@ -13,3 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# COMISR lib package
+"""COMISR library modules.
+
+This package contains the model and operations for COMISR super-resolution.
+"""
+

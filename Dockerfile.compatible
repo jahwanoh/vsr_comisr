@@ -21,10 +21,18 @@ COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Install specific versions of TensorFlow and TensorFlow Addons
-RUN pip3 install tensorflow==2.13.0 tensorflow-addons==0.20.0
+RUN pip3 install tensorflow==2.10.0 tensorflow-addons==0.19.0
 
 # Copy application code
 COPY . .
+
+# Set up comisr module structure
+RUN if [ -d "/app/lib" ] && [ ! -d "/app/comisr" ]; then \
+    mkdir -p /app/comisr/lib && \
+    cp /app/lib/*.py /app/comisr/lib/ && \
+    echo "# COMISR package" > /app/comisr/__init__.py && \
+    echo "# COMISR lib package" > /app/comisr/lib/__init__.py; \
+fi
 
 # Make sure scripts are executable
 RUN chmod +x *.sh

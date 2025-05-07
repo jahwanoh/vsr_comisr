@@ -3,12 +3,21 @@
 # Create directories if they don't exist
 mkdir -p data model
 
-# Copy the model checkpoint files from the Docker container if needed
-# Uncomment the following lines if you need to copy the model files from Docker
-# NOTE: You should have the Docker container running for this to work
-# docker cp video-pipeline-sr:/app/model/model.ckpt.data-00000-of-00001 ./model/
-# docker cp video-pipeline-sr:/app/model/model.ckpt.index ./model/
-# docker cp video-pipeline-sr:/app/model/model.ckpt.meta ./model/
+# Fix module structure if needed
+if [ ! -d "comisr" ] && [ -d "lib" ]; then
+  echo "Creating comisr module structure..."
+  mkdir -p comisr/lib
+  cp lib/*.py comisr/lib/
+  
+  # Create __init__.py files if they don't exist
+  if [ ! -f "comisr/__init__.py" ]; then
+    echo "# COMISR package" > comisr/__init__.py
+  fi
+  
+  if [ ! -f "comisr/lib/__init__.py" ]; then
+    echo "# COMISR lib package" > comisr/lib/__init__.py
+  fi
+fi
 
 # Parameters
 INPUT_VIDEO="data/match_178203_half_res.mp4"
@@ -102,6 +111,9 @@ echo "Start:      $START_FRAME"
 echo "End:        $END_FRAME"
 echo "FPS:        $FPS"
 echo ""
+
+# Set PYTHONPATH to include current directory
+export PYTHONPATH=.:$PYTHONPATH
 
 # Run the super-resolution script
 python video_inference.py \
