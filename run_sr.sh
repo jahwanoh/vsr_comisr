@@ -116,7 +116,7 @@ echo ""
 export PYTHONPATH=.:$PYTHONPATH
 
 # Run the super-resolution script
-python video_inference.py \
+python3 video_inference.py \
   --input_video="${INPUT_VIDEO}" \
   --output_video="${OUTPUT_VIDEO}" \
   --checkpoint_path="${CHECKPOINT}" \
