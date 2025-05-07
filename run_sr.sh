@@ -129,6 +129,8 @@ python3 video_inference.py \
   --end_frame="${END_FRAME}" \
   --fps="${FPS}"
 
+gsutil cp data/match_178203_from_full_x2_sr_comisr.mp4 gs://bepro-dev/research/SRGAN/
+
 # Check the exit code
 if [ $? -eq 0 ]; then
   echo ""
