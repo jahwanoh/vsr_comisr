@@ -7,3 +7,4 @@ opencv-python>=2.4.11
 tensorflow==2.10.0
 scikit-image>=0.18.0
 tensorflow-addons
+tf_slim
