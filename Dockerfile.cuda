@@ -22,22 +22,10 @@ RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Install specific versions of TensorFlow and TensorFlow Addons
-RUN pip3 install tensorflow==2.15.0 tensorflow-addons==0.22.0
-
-# Copy application code
-COPY . .
-
-# Set up comisr module structure
-RUN mkdir -p /app/comisr/lib && \
-    cp /app/lib/*.py /app/comisr/lib/ && \
-    echo "# COMISR package" > /app/comisr/__init__.py && \
-    echo "# COMISR lib package" > /app/comisr/lib/__init__.py
-
-# Make sure scripts are executable
-RUN chmod +x *.sh
+# RUN pip3 install tensorflow==2.15.0 tensorflow-addons==0.22.0
 
 # Set up environment variables
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/comisr
 ENV TF_FORCE_GPU_ALLOW_GROWTH=true
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 
