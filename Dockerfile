@@ -39,7 +39,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # The pip install should handle it with the devel image.
 
 # Set up environment variables
-ENV PYTHONPATH=/comisr_app # So `from comisr.lib import ...` works
+ENV PYTHONPATH=/comisr_app 
+# So `from comisr.lib import ...` works
 ENV TF_FORCE_GPU_ALLOW_GROWTH=true
 # LD_LIBRARY_PATH should be correctly set by nvidia/cuda image
 
