@@ -1,16 +1,9 @@
 absl-py>=1.0.0
-numpy>=1.22.0,<1.24.0
-scipy>=1.9.0
-pandas>=2.0.0
-keras>=2.15.0
+numpy>=1.22.0,<1.24.0 # <1.24.0 for TF 2.15 compatibility with some systems
 opencv-python>=4.6.0
 tensorflow==2.15.0
-tensorflow-addons==0.22.0
-scikit-image>=0.19.0
-matplotlib>=3.5.0
-pillow>=9.0.0
-h5py>=3.6.0
-protobuf>=3.19.0,<4.0.0
-tqdm>=4.64.0
-ffmpeg-python>=0.2.0
-tf_slim
+tensorflow-addons==0.22.0 # Or remove if not using its dense_image_warp/gaussian_filter2d
+Pillow>=9.0.0 # For image I/O if used by dataloader
+# tf_slim (can likely be removed for COMISR if not used elsewhere)
+# protobuf < 4.0.0 is often needed for older TF versions, TF 2.15 might be more flexible
+protobuf>=3.20.0,<5.0.0 # Broader range for TF 2.15
