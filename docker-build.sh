@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# Exit script if any command fails
-set -e
+# Build the Docker image with proper CUDA support
+docker build -t comisr -f Dockerfile .
 
-DOCKER_IMAGE="comisr:latest"
-DOCKER_BUILDKIT=1
-
-echo "Building Docker image: $DOCKER_IMAGE"
-docker build -t $DOCKER_IMAGE .
-
-echo "Build completed successfully!"
-echo "Run './docker-run.sh' to start the container." 
+echo "Docker image built successfully"
+echo "Run the container with:"
+echo "docker run --gpus all -it -v $(pwd)/data:/app/data -v $(pwd)/model:/app/model video-pipeline-sr-gpu" 

@@ -1,39 +1,33 @@
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
-# Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     python3-opencv \
+    libopencv-dev \
     ffmpeg \
     git \
     wget \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a working directory
+# Create working directory
 WORKDIR /app
 
-# Copy requirements file and install dependencies
+# Copy requirements
 COPY requirements.txt .
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir gcloud
 
-# Install Google Cloud SDK
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
-    tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-    apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
-    apt-get update && apt-get install -y google-cloud-sdk
+# Install specific versions of TensorFlow and TensorFlow Addons
+# RUN pip3 install tensorflow==2.15.0 tensorflow-addons==0.22.0
 
-# Copy the rest of the application code
-COPY . .
-
-# Set up environment variables for GPU
+# Set up environment variables
+ENV PYTHONPATH=/comisr
 ENV TF_FORCE_GPU_ALLOW_GROWTH=true
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 
-# Default command
-CMD ["/bin/bash"] 
+# Set entrypoint
+ENTRYPOINT ["/bin/bash"] 
