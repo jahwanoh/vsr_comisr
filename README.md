@@ -144,6 +144,19 @@ The pre-trained model can be downloaded from: *gs://gresearch/comisr/model/*
 
 ## Usage
 ```shell
+docker run --rm --gpus all -v /home/research/data:/mnt/data -v /home/research/model/comisr:/mnt/model -v /home/research/output:/mnt/output comisr -c "bash ./run_sr.sh"
+
+```
+
+python3 /app/video_inference.py \
+  --input_video="/app/data/match_178203_half_res.mp4" \
+  --output_video="/app/data/match_178203_super_res.mp4" \
+  --checkpoint_path="/app/model/model.ckpt" \
+  --vsr_scale=4 \
+  --num_resblock=10 \
+  --use_ema=true
+
+```shell
 python inference_and_eval.py \
 --checkpoint_path=/tmp/model.ckpt \
 --input_lr_dir=/tmp/lr_4x_crf25 \
