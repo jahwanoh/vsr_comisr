@@ -20,10 +20,10 @@ if [ ! -d "comisr" ] && [ -d "lib" ]; then
 fi
 
 # Parameters
-INPUT_VIDEO="/mnt/data/pano_center_15.mp4"
+INPUT_VIDEO="/mnt/data/pano_cerberus_center_15.mp4"
 # INPUT_VIDEO="data/match_178203.mp4"
 # OUTPUT_VIDEO="data/match_178203_from_full_x4_sr_comisr.mp4"
-OUTPUT_VIDEO="/mnt/output/uav/pano_center_15x4_comisr.mp4"
+OUTPUT_VIDEO="/mnt/output/uav/pano_cerberus_center_15x4_comisr.mp4"
 CHECKPOINT="/mnt/model/model.ckpt"
 VSR_SCALE=4
 NUM_RESBLOCK=10
