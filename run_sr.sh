@@ -117,6 +117,20 @@ echo ""
 # Set PYTHONPATH to include current directory
 export PYTHONPATH=.:$PYTHONPATH
 
+# Echo the command that will be executed
+echo "Executing command:"
+echo "python3 video_inference.py \\
+  --input_video=\"${INPUT_VIDEO}\" \\
+  --output_video=\"${OUTPUT_VIDEO}\" \\
+  --checkpoint_path=\"${CHECKPOINT}\" \\
+  --vsr_scale=\"${VSR_SCALE}\" \\
+  --num_resblock=\"${NUM_RESBLOCK}\" \\
+  --use_ema=\"${USE_EMA}\" \\
+  --start_frame=\"${START_FRAME}\" \\
+  --end_frame=\"${END_FRAME}\" \\
+  --fps=\"${FPS}\""
+echo ""
+
 # Run the super-resolution script
 python3 video_inference.py \
   --input_video="${INPUT_VIDEO}" \
