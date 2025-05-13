@@ -31,6 +31,8 @@ USE_EMA=true
 START_FRAME=0
 END_FRAME=-1
 FPS=0
+USE_CPU=false
+GPU_MEMORY_FRACTION=1.0
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -67,18 +69,28 @@ while [[ $# -gt 0 ]]; do
       FPS="${1#*=}"
       shift
       ;;
+    --use_cpu=*)
+      USE_CPU="${1#*=}"
+      shift
+      ;;
+    --gpu_memory_fraction=*)
+      GPU_MEMORY_FRACTION="${1#*=}"
+      shift
+      ;;
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
-      echo "  --input=FILE     Input video file (default: $INPUT_VIDEO)"
-      echo "  --output=FILE    Output video file (default: $OUTPUT_VIDEO)"
-      echo "  --checkpoint=DIR Checkpoint directory (default: $CHECKPOINT)"
-      echo "  --scale=N        Super resolution scale (default: $VSR_SCALE)"
-      echo "  --blocks=N       Number of resblocks (default: $NUM_RESBLOCK)"
-      echo "  --start=N        Start frame (default: $START_FRAME)"
-      echo "  --end=N          End frame (default: $END_FRAME)"
-      echo "  --fps=N          Output FPS (default: same as input)"
-      echo "  --help           Show this help message"
+      echo "  --input=FILE             Input video file (default: $INPUT_VIDEO)"
+      echo "  --output=FILE            Output video file (default: $OUTPUT_VIDEO)"
+      echo "  --checkpoint=DIR         Checkpoint directory (default: $CHECKPOINT)"
+      echo "  --scale=N                Super resolution scale (default: $VSR_SCALE)"
+      echo "  --blocks=N               Number of resblocks (default: $NUM_RESBLOCK)"
+      echo "  --start=N                Start frame (default: $START_FRAME)"
+      echo "  --end=N                  End frame (default: $END_FRAME)"
+      echo "  --fps=N                  Output FPS (default: same as input)"
+      echo "  --use_cpu=BOOL           Use CPU instead of GPU (default: $USE_CPU)"
+      echo "  --gpu_memory_fraction=N  Fraction of GPU memory to use (0.0-1.0, default: $GPU_MEMORY_FRACTION)"
+      echo "  --help                   Show this help message"
       exit 0
       ;;
     *)
@@ -104,18 +116,33 @@ fi
 
 # Print configuration
 echo "Starting super-resolution with the following settings:"
-echo "Input:      $INPUT_VIDEO"
-echo "Output:     $OUTPUT_VIDEO"
-echo "Checkpoint: $CHECKPOINT"
-echo "Scale:      $VSR_SCALE"
-echo "Resblocks:  $NUM_RESBLOCK"
-echo "Start:      $START_FRAME"
-echo "End:        $END_FRAME"
-echo "FPS:        $FPS"
+echo "Input:              $INPUT_VIDEO"
+echo "Output:             $OUTPUT_VIDEO"
+echo "Checkpoint:         $CHECKPOINT"
+echo "Scale:              $VSR_SCALE"
+echo "Resblocks:          $NUM_RESBLOCK"
+echo "Start:              $START_FRAME"
+echo "End:                $END_FRAME"
+echo "FPS:                $FPS"
+echo "Use CPU:            $USE_CPU"
+echo "GPU Memory Fraction: $GPU_MEMORY_FRACTION"
 echo ""
 
 # Set PYTHONPATH to include current directory
 export PYTHONPATH=.:$PYTHONPATH
+
+# Set TensorFlow memory management environment variables
+if [ "$USE_CPU" = "true" ]; then
+  export CUDA_VISIBLE_DEVICES="-1"
+  echo "Running on CPU only mode"
+fi
+
+# Set GPU memory fraction
+export TF_GPU_MEMORY_FRACTION=$GPU_MEMORY_FRACTION
+echo "GPU memory fraction set to: $GPU_MEMORY_FRACTION"
+
+# Force TensorFlow to allocate memory dynamically
+export TF_FORCE_GPU_ALLOW_GROWTH=true
 
 # Echo the command that will be executed
 echo "Executing command:"
@@ -153,6 +180,12 @@ if [ $? -eq 0 ]; then
 else
   echo ""
   echo "Super-resolution failed. Please check the error messages above."
+  echo "If you're experiencing OOM (Out of Memory) errors, try the following:"
+  echo "  1. Limit GPU memory:       ./run_sr.sh --gpu_memory_fraction=0.7"
+  echo "  2. Process fewer frames:   ./run_sr.sh --start=0 --end=100" 
+  echo "  3. Use CPU (much slower):  ./run_sr.sh --use_cpu=true"
+  echo "  4. Reduce input video resolution before processing"
+  echo ""
   echo "If you're experiencing TensorFlow compatibility issues, consider using the compatible Docker container:"
   echo "  1. Build the container:  ./docker-build-compatible.sh"
   echo "  2. Run the container:    ./docker-run-compatible.sh"
